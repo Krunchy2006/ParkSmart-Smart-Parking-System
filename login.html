@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ParkSmart - Login</title>
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Navbar Header -->
+    <header class="navbar">
+        <div class="container">
+            <a href="index.html" class="logo">
+                <i data-lucide="parking-circle"></i> Park<span>Smart</span>
+            </a>
+            
+            <nav>
+                <ul class="nav-menu" id="navMenu">
+                    <li><a href="index.html" class="nav-link">Home</a></li>
+                    <li><a href="dashboard.html" class="nav-link">Dashboard</a></li>
+                    <li><a href="scanner.html" class="nav-link">Gate Scanner</a></li>
+                    <li><a href="admin.html" class="nav-link">Admin Portal</a></li>
+                </ul>
+            </nav>
+            
+            <div class="nav-actions">
+                <a href="signup.html" class="btn btn-primary btn-sm">Sign Up</a>
+            </div>
+
+            <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+                <i data-lucide="menu"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content wrapper -->
+    <main class="main-content">
+        <div class="auth-wrapper">
+            <div class="card auth-card">
+                <div class="auth-header">
+                    <h2>Welcome Back</h2>
+                    <p>Access your ParkSmart dashboard and bookings</p>
+                </div>
+
+                <div class="feedback-msg feedback-error" id="errorMessage" style="display: none; padding: 12px; margin-bottom: 20px; font-size: 14px; border-radius: var(--border-radius-sm); background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: var(--color-danger); text-align: center;"></div>
+
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="email" class="form-label">Email Address</label>
+                        <input type="email" id="email" class="form-control" placeholder="name@example.com" required autocomplete="email">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" id="password" class="form-control" placeholder="••••••••" required autocomplete="current-password">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">
+                        Sign In <i data-lucide="arrow-right"></i>
+                    </button>
+                </form>
+
+                <!-- Helper Quick Credentials Card -->
+                <div style="margin-top: 24px; padding: 16px; border-radius: 8px; background: rgba(6, 182, 212, 0.04); border: 1px solid rgba(6, 182, 212, 0.1); font-size: 13px;">
+                    <div style="font-weight: 700; color: var(--color-primary); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                        <i data-lucide="info" style="width: 14px; height: 14px;"></i> Demo accounts (Click to use)
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <div style="cursor: pointer; padding: 6px; border-radius: 4px; border: 1px solid transparent;" class="demo-account-row" onclick="fillCredentials('driver@parksmart.com', 'driver123')">
+                            <span style="color: var(--color-success); font-weight: 600;">Driver:</span> driver@parksmart.com <br>
+                            <span style="color: var(--text-muted);">Pass: driver123</span>
+                        </div>
+                        <div style="cursor: pointer; padding: 6px; border-radius: 4px; border: 1px solid transparent;" class="demo-account-row" onclick="fillCredentials('admin@parksmart.com', 'admin123')">
+                            <span style="color: var(--color-warning); font-weight: 600;">Admin:</span> admin@parksmart.com <br>
+                            <span style="color: var(--text-muted);">Pass: admin123</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="auth-footer-link">
+                    Don't have an account? <a href="signup.html">Register</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container" style="text-align: center;">
+            <p>&copy; 2026 ParkSmart Operations. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/state.js"></script>
+    <script src="js/auth.js" type="module"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <script>
+        // Init Lucide
+        lucide.createIcons();
+
+        // Responsive Hamburger Toggle
+        const navToggle = document.getElementById('navToggle');
+        const navMenu = document.getElementById('navMenu');
+        navToggle.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+        });
+
+        // Filling demo credentials function
+        function fillCredentials(email, pass) {
+            document.getElementById('email').value = email;
+            document.getElementById('password').value = pass;
+        }
+
+        // Form Submit Handler
+        const loginForm = document.getElementById('loginForm');
+        const errMessage = document.getElementById('errorMessage');
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            errMessage.style.display = 'none';
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            const res = await window.ParkingAuth.login(email, password);
+
+            if (res.success) {
+                // Successful login redirection
+                if (res.user.role === 'admin') {
+                    window.location.href = 'admin.html';
+                } else {
+                    window.location.href = 'dashboard.html';
+                }
+            } else {
+                errMessage.innerText = res.error;
+                errMessage.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

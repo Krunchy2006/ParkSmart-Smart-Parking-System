@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ParkSmart - Smart Parking System</title>
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Navbar Header -->
+    <header class="navbar">
+        <div class="container">
+            <a href="index.html" class="logo">
+                <i data-lucide="parking-circle"></i> Park<span>Smart</span>
+            </a>
+            
+            <nav>
+                <ul class="nav-menu" id="navMenu">
+                    <li><a href="index.html" class="nav-link active">Home</a></li>
+                    <li><a href="dashboard.html" class="nav-link">Dashboard</a></li>
+                    <li><a href="scanner.html" class="nav-link">Gate Scanner</a></li>
+                    <li><a href="admin.html" class="nav-link">Admin Portal</a></li>
+                    <!-- Dynamic auth menu items injected by JS -->
+                </ul>
+            </nav>
+            
+            <div class="nav-actions" id="navActions">
+                <a href="login.html" class="btn btn-secondary btn-sm">Login</a>
+                <a href="signup.html" class="btn btn-primary btn-sm">Sign Up</a>
+            </div>
+
+            <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+                <i data-lucide="menu"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <div class="hero-glow"></div>
+            <div class="container">
+                <div class="hero-tagline">
+                    <i data-lucide="sparkles"></i> The Future of Parking is Here
+                </div>
+                <h1 class="hero-title">Effortless Parking <br>Reserved In Seconds</h1>
+                <p class="hero-desc">Skip the search. ParkSmart allows you to book, navigate, and check-in to your parking space using simple, instant QR tickets.</p>
+                
+                <div class="hero-actions">
+                    <a href="dashboard.html" class="btn btn-primary">
+                        <i data-lucide="calendar-plus"></i> Reserve Parking Now
+                    </a>
+                    <a href="scanner.html" class="btn btn-secondary">
+                        <i data-lucide="qr-code"></i> Open Kiosk Scanner
+                    </a>
+                </div>
+
+                <!-- Real-time Live Widget -->
+                <div class="card" style="max-width: 600px; margin: 40px auto 0; text-align: center;">
+                    <div class="card-title" style="justify-content: center;">
+                        <i data-lucide="radio" style="animation: pulse-glow 2s infinite;"></i> Real-Time Space Tracker
+                    </div>
+                    <div style="display: flex; justify-content: space-around; align-items: center; margin-top: 20px; flex-wrap: wrap; gap: 16px;">
+                        <div>
+                            <div style="font-size: 36px; font-weight: 800; font-family: var(--font-heading); color: var(--color-success);" id="liveAvailable">--</div>
+                            <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">Available Spots</div>
+                        </div>
+                        <div style="width: 1px; height: 50px; background-color: var(--border-color);"></div>
+                        <div>
+                            <div style="font-size: 36px; font-weight: 800; font-family: var(--font-heading); color: var(--color-danger);" id="liveOccupied">--</div>
+                            <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">Occupied Spots</div>
+                        </div>
+                        <div style="width: 1px; height: 50px; background-color: var(--border-color);"></div>
+                        <div>
+                            <div style="font-size: 36px; font-weight: 800; font-family: var(--font-heading); color: var(--text-primary);" id="liveTotal">--</div>
+                            <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">Total Capacity</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 20px; font-size: 13px; color: var(--text-muted);">
+                        *Data updates automatically as users reserve and occupy parking space.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Showcase Section -->
+        <section style="padding: 40px 0 100px;">
+            <div class="container">
+                <h2 style="text-align: center; font-size: 32px; margin-bottom: 50px; font-family: var(--font-heading);">
+                    Smart System Highlights
+                </h2>
+                
+                <div class="features-grid">
+                    <!-- Feature 1 -->
+                    <div class="card feature-card">
+                        <div class="feature-icon-wrapper">
+                            <i data-lucide="qr-code"></i>
+                        </div>
+                        <h3>QR-Based Entry Validation</h3>
+                        <p>Reserve a parking slot online and gain access through secure QR code verification at the gate.</p>
+                    </div>
+
+                    <!-- Feature 2 -->
+                    <div class="card feature-card">
+                        <div class="feature-icon-wrapper">
+                            <i data-lucide="ticket"></i>
+                        </div>
+                        <h3>Instant QR Ticket</h3>
+                        <p>Generate secure, scanning tickets immediately upon reservation. Seamless gate check-in with your mobile device.</p>
+                    </div>
+
+                    <!-- Feature 3 -->
+                    <div class="card feature-card">
+                        <div class="feature-icon-wrapper">
+                            <i data-lucide="shield-check"></i>
+                        </div>
+                        <h3>Admin Controls</h3>
+                        <p>Total control over facility capacities, active parking operations logs, status adjustments, and alert systems.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="index.html" class="logo">
+                        <i data-lucide="parking-circle"></i> Park<span>Smart</span>
+                    </a>
+                    <p>ParkSmart represents the modern standard for simple, synchronized, and stress-free parking reservations.</p>
+                </div>
+                <div class="footer-nav">
+                    <h4>Drivers</h4>
+                    <a href="dashboard.html">Reserve Parking</a>
+                    <a href="login.html">Sign In</a>
+                    <a href="signup.html">Create Account</a>
+                </div>
+                <div class="footer-nav">
+                    <h4>System</h4>
+                    <a href="scanner.html">Kiosk Entry Scanner</a>
+                    <a href="admin.html">Administrator Portal</a>
+                    <a href="index.html#features">System Architecture</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 ParkSmart Operations. All rights reserved.</p>
+                <div style="display: flex; gap: 20px;">
+                    <a href="#" class="nav-link">Terms</a>
+                    <a href="#" class="nav-link">Privacy</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast Notifications Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Scripts -->
+    <script src="js/state.js"></script>
+    <script src="js/auth.js" type="module"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <script>
+        // Init Lucide Icons
+        lucide.createIcons();
+
+        // Responsive Hamburger Toggle
+        const navToggle = document.getElementById('navToggle');
+        const navMenu = document.getElementById('navMenu');
+        navToggle.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+        });
+
+        // Dynamic Auth Navigation setup
+        function renderNavbarAuth() {
+            const currentUser = window.ParkingAuth.getCurrentUser();
+            const navActions = document.getElementById('navActions');
+            
+            if (currentUser) {
+                // User logged in
+                navActions.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span style="font-size: 14px; font-weight: 500; color: var(--text-secondary);">
+                            <i data-lucide="user" style="display: inline; width: 14px; vertical-align: middle; margin-right: 4px;"></i>${currentUser.name}
+                        </span>
+                        <button onclick="window.ParkingAuth.logout()" class="btn btn-secondary btn-sm">Logout</button>
+                    </div>
+                `;
+                lucide.createIcons();
+            }
+        }
+        renderNavbarAuth();
+
+        // Load Live counts
+        function updateLiveCounts() {
+            if (window.ParkingState) {
+                const state = window.ParkingState.getState();
+                const total = state.capacity;
+                const reserved = state.slots.filter(s => s.status === 'reserved').length;
+                const occupied = state.slots.filter(s => s.status === 'occupied').length;
+                const available = state.slots.filter(s => s.status === 'available').length;
+
+                document.getElementById('liveAvailable').innerText = available;
+                document.getElementById('liveOccupied').innerText = occupied;
+                document.getElementById('liveTotal').innerText = total;
+            }
+        }
+        updateLiveCounts();
+        
+        // Listen to storage state events to update count automatically across windows
+        window.addEventListener('storage', updateLiveCounts);
+    </script>
+</body>
+</html>

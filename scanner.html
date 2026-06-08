@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ParkSmart - Gate Scanner Kiosk</title>
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        #reader video {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+        }
+        #reader {
+            border: none !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar Header -->
+    <header class="navbar">
+        <div class="container">
+            <a href="index.html" class="logo">
+                <i data-lucide="parking-circle"></i> Park<span>Smart</span>
+            </a>
+            
+            <nav>
+                <ul class="nav-menu" id="navMenu">
+                    <li><a href="index.html" class="nav-link">Home</a></li>
+                    <li><a href="dashboard.html" class="nav-link">Dashboard</a></li>
+                    <li><a href="scanner.html" class="nav-link active">Gate Scanner</a></li>
+                    <li><a href="admin.html" class="nav-link">Admin Portal</a></li>
+                </ul>
+            </nav>
+            
+            <div class="nav-actions" id="navActions">
+                <!-- Session dynamic loading -->
+            </div>
+
+            <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+                <i data-lucide="menu"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content wrapper -->
+    <main class="main-content">
+        <div class="container">
+            <div class="scanner-grid">
+                
+                <!-- LEFT COLUMN: Camera feed sweep and screen status -->
+                <div>
+                    <div style="margin-bottom: 24px;">
+                        <h1 style="font-size: 32px; font-weight: 800; font-family: var(--font-heading);">Barrier Kiosk Terminal</h1>
+                        <p style="color: var(--text-secondary); font-size: 15px;">Simulated vehicle gate entry and departure checker.</p>
+                    </div>
+
+                    <!-- Camera Viewport Card -->
+                    <div class="card scanner-view-card">
+                        <div class="camera-viewport">
+                            <!-- HTML5 QR Reader Element -->
+                            <div id="reader" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;"></div>
+                            
+                            <!-- Sweeping laser line -->
+                            <div class="scanner-sweep-line" style="z-index: 3;"></div>
+                            
+                            <!-- Focus Brackets -->
+                            <div class="camera-focus-bracket bracket-tl" style="z-index: 3;"></div>
+                            <div class="camera-focus-bracket bracket-tr" style="z-index: 3;"></div>
+                            <div class="camera-focus-bracket bracket-bl" style="z-index: 3;"></div>
+                            <div class="camera-focus-bracket bracket-br" style="z-index: 3;"></div>
+
+                            <!-- Mock camera screen content -->
+                            <div class="mock-camera-feed" id="scannerFeedView" style="z-index: 2;">
+                                <i data-lucide="scan-face" style="width: 64px; height: 64px;"></i>
+                                <h3 style="margin-top: 10px;">Camera Simulator Active</h3>
+                                <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Hold QR Code ticket in front of device</p>
+                            </div>
+                        </div>
+
+                        <!-- Scan Status Feedback indicator box -->
+                        <div style="width: 100%; max-width: 480px; margin-top: 24px;">
+                            <div class="scanner-feedback feedback-idle" id="scannerFeedbackBox" style="flex-direction: column; height: auto; gap: 8px; padding: 20px;">
+                                <div style="display: flex; align-items: center; justify-content: center;" id="scannerStatusHeader">
+                                    <i data-lucide="loader" style="animation: spin 2s linear infinite; width: 16px; height: 16px; margin-right: 8px;"></i>
+                                    <span id="scannerFeedbackText">Awaiting Scan Request...</span>
+                                </div>
+                                <div id="scannerDriverDetails" style="display: none; margin-top: 12px; border-top: 1px dashed rgba(255,255,255,0.1); width: 100%; padding-top: 12px; text-align: left; font-size: 14px;">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                                        <span style="color: var(--text-secondary);">Driver:</span>
+                                        <span id="scannerDriverName" style="font-weight: 700;">-</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                                        <span style="color: var(--text-secondary);">Date:</span>
+                                        <span id="scannerReservationDate" style="font-weight: 700;">-</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span style="color: var(--text-secondary);">Status:</span>
+                                        <span id="scannerAccessStatus" style="font-weight: 700;">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RIGHT COLUMN: Simulator Actions -->
+                <div class="sidebar-panel">
+                    
+                    <!-- Scan Control Card -->
+                    <div class="card" style="flex: 1; display: flex; flex-direction: column;">
+                        <div class="card-title">
+                            <i data-lucide="terminal"></i> Scanner Controls
+                        </div>
+                        <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 16px;">
+                            Simulate physical gate hardware sensors by executing actions below.
+                        </p>
+
+                        <!-- Active Reservations Selector Dropdown for simulation ease -->
+                        <div class="form-group">
+                            <label for="activeTicketSelect" class="form-label">Select Active Ticket</label>
+                            <select id="activeTicketSelect" class="form-control" style="font-family: monospace;">
+                                <option value="">-- No Active Tickets Found --</option>
+                            </select>
+                        </div>
+
+                        <!-- Manual text fallback -->
+                        <div class="form-group">
+                            <label for="manualCodeVal" class="form-label">Or Enter Code Manually</label>
+                            <input type="text" id="manualCodeVal" class="form-control" placeholder="TX-XXXXXX" style="font-family: monospace;">
+                        </div>
+
+                        <div class="scanner-controls" style="margin-top: auto; display: flex; flex-direction: column; gap: 16px; padding-top: 20px;">
+                            <button class="btn btn-primary" id="btnSimulateEntry" style="width: 100%;">
+                                <i data-lucide="log-in"></i> Verify & Check-In
+                            </button>
+                            <button class="btn btn-outline" id="btnSimulateExit" style="width: 100%;">
+                                <i data-lucide="log-out"></i> Verify & Check-Out
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Direct Guest Gate Entry -->
+                    <div class="card" style="display: none;">
+                        <div class="card-title">
+                            <i data-lucide="car"></i> Guest Drive-in
+                        </div>
+                        <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 16px;">
+                            For drivers arriving without a reservation. Allocates and occupies the first available parking bay directly.
+                        </p>
+                        <button class="btn btn-secondary" id="btnDirectGuestEntry" style="width: 100%;">
+                            <i data-lucide="ticket-plus"></i> Assign Available Slot
+                        </button>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container" style="text-align: center;">
+            <p>&copy; 2026 ParkSmart Operations. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Toast Notifications Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script src="js/state.js"></script>
+    <script src="js/auth.js" type="module"></script>
+    <script src="js/scanner.js" type="module"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        // Init Lucide
+        lucide.createIcons();
+
+        // Responsive Hamburger Toggle
+        const navToggle = document.getElementById('navToggle');
+        const navMenu = document.getElementById('navMenu');
+        navToggle.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+        });
+
+        // Rotation spin keyframes animation logic inline helper
+        const styleSheet = document.createElement('style');
+        styleSheet.innerText = `
+            @keyframes spin {
+                from { transform: rotate(0deg); }
+                to { transform: rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(styleSheet);
+    </script>
+</body>
+</html>

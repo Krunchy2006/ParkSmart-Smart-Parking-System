@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ParkSmart - Create Account</title>
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Navbar Header -->
+    <header class="navbar">
+        <div class="container">
+            <a href="index.html" class="logo">
+                <i data-lucide="parking-circle"></i> Park<span>Smart</span>
+            </a>
+            
+            <nav>
+                <ul class="nav-menu" id="navMenu">
+                    <li><a href="index.html" class="nav-link">Home</a></li>
+                    <li><a href="dashboard.html" class="nav-link">Dashboard</a></li>
+                    <li><a href="scanner.html" class="nav-link">Gate Scanner</a></li>
+                    <li><a href="admin.html" class="nav-link">Admin Portal</a></li>
+                </ul>
+            </nav>
+            
+            <div class="nav-actions">
+                <a href="login.html" class="btn btn-secondary btn-sm">Login</a>
+            </div>
+
+            <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+                <i data-lucide="menu"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content wrapper -->
+    <main class="main-content">
+        <div class="auth-wrapper">
+            <div class="card auth-card">
+                <div class="auth-header">
+                    <h2>Create Account</h2>
+                    <p>Register as a driver to reserve parking spots</p>
+                </div>
+
+                <div class="feedback-msg feedback-error" id="errorMessage" style="display: none; padding: 12px; margin-bottom: 20px; font-size: 14px; border-radius: var(--border-radius-sm); background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: var(--color-danger); text-align: center;"></div>
+                <div class="feedback-msg feedback-success" id="successMessage" style="display: none; padding: 12px; margin-bottom: 20px; font-size: 14px; border-radius: var(--border-radius-sm); background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); color: var(--color-success); text-align: center;"></div>
+
+                <form id="signupForm">
+                    <div class="form-group">
+                        <label for="fullName" class="form-label">Full Name</label>
+                        <input type="text" id="fullName" class="form-control" placeholder="John Doe" required autocomplete="name">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email" class="form-label">Email Address</label>
+                        <input type="email" id="email" class="form-control" placeholder="name@example.com" required autocomplete="email">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" id="password" class="form-control" placeholder="Minimum 6 characters" required autocomplete="new-password">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirmPassword" class="form-label">Confirm Password</label>
+                        <input type="password" id="confirmPassword" class="form-control" placeholder="Repeat your password" required autocomplete="new-password">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">
+                        Register <i data-lucide="user-plus"></i>
+                    </button>
+                </form>
+
+                <div class="auth-footer-link">
+                    Already have an account? <a href="login.html">Sign In</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container" style="text-align: center;">
+            <p>&copy; 2026 ParkSmart Operations. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/state.js"></script>
+    <script src="js/auth.js" type="module"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <script>
+        // Init Lucide
+        lucide.createIcons();
+
+        // Responsive Hamburger Toggle
+        const navToggle = document.getElementById('navToggle');
+        const navMenu = document.getElementById('navMenu');
+        navToggle.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+        });
+
+        // Form Submit Handler
+        const signupForm = document.getElementById('signupForm');
+        const errMessage = document.getElementById('errorMessage');
+        const succMessage = document.getElementById('successMessage');
+
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            errMessage.style.display = 'none';
+            succMessage.style.display = 'none';
+
+            const name = document.getElementById('fullName').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            // Password confirmation check
+            if (password.length < 6) {
+                errMessage.innerText = 'Password must be at least 6 characters long.';
+                errMessage.style.display = 'block';
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                errMessage.innerText = 'Passwords do not match.';
+                errMessage.style.display = 'block';
+                return;
+            }
+
+            const res = await window.ParkingAuth.signup(name, email, password);
+
+            if (res.success) {
+                succMessage.innerText = 'Account successfully registered! Redirecting to login...';
+                succMessage.style.display = 'block';
+                signupForm.reset();
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 1800);
+            } else {
+                errMessage.innerText = res.error;
+                errMessage.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ParkSmart - Administrator Portal</title>
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Navbar Header -->
+    <header class="navbar">
+        <div class="container">
+            <a href="index.html" class="logo">
+                <i data-lucide="parking-circle"></i> Park<span>Smart</span>
+            </a>
+            
+            <nav>
+                <ul class="nav-menu" id="navMenu">
+                    <li><a href="index.html" class="nav-link">Home</a></li>
+                    <li><a href="dashboard.html" class="nav-link">Dashboard</a></li>
+                    <li><a href="scanner.html" class="nav-link">Gate Scanner</a></li>
+                    <li><a href="admin.html" class="nav-link active">Admin Portal</a></li>
+                </ul>
+            </nav>
+            
+            <div class="nav-actions" id="navActions">
+                <!-- Logged in auth credentials state setup by auth.js -->
+            </div>
+
+            <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+                <i data-lucide="menu"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content wrapper -->
+    <main class="main-content">
+        <div class="container">
+            <div class="admin-grid">
+                
+                <!-- LEFT COLUMN: Stats and capacity adjustments -->
+                <div>
+                    <div style="margin-bottom: 24px;">
+                        <h1 style="font-size: 32px; font-weight: 800; font-family: var(--font-heading);">System Operations</h1>
+                        <p style="color: var(--text-secondary); font-size: 15px;">Monitor facility status metrics and override configurations.</p>
+                    </div>
+
+                    <!-- Stats Strip -->
+                    <div class="dashboard-stats-strip">
+                        <div class="stat-box">
+                            <div class="stat-box-icon" style="background: rgba(6, 182, 212, 0.08); color: var(--color-primary);">
+                                <i data-lucide="layout-grid"></i>
+                            </div>
+                            <div class="stat-box-details">
+                                <h4>Total Capacity</h4>
+                                <p id="adminTotal">--</p>
+                            </div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-box-icon success">
+                                <i data-lucide="check-circle-2"></i>
+                            </div>
+                            <div class="stat-box-details">
+                                <h4>Available Slots</h4>
+                                <p id="adminAvailable">--</p>
+                            </div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-box-icon danger">
+                                <i data-lucide="car"></i>
+                            </div>
+                            <div class="stat-box-details">
+                                <h4>Occupied Slots</h4>
+                                <p id="adminOccupied">--</p>
+                            </div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-box-icon warning" id="gateStatusIconContainer">
+                                <i data-lucide="door-open"></i>
+                            </div>
+                            <div class="stat-box-details">
+                                <h4>Gate Status</h4>
+                                <p id="adminGateStatus">--</p>
+                            </div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-box-icon" style="background: rgba(165, 243, 252, 0.08); color: #a5f3fc;">
+                                <i data-lucide="activity"></i>
+                            </div>
+                            <div class="stat-box-details">
+                                <h4>Last Event</h4>
+                                <p id="adminLastEvent" style="font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;">--</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Facility Controls Card -->
+                    <div class="card" style="margin-bottom: 30px;">
+                        <div class="card-title">
+                            <i data-lucide="sliders"></i> Capacity Management
+                        </div>
+                        
+                        <form id="capacityForm" style="display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap;">
+                            <div class="form-group" style="margin-bottom: 0; flex: 1; min-width: 200px;">
+                                <label for="inputCapacity" class="form-label">Total Slots Capacity (1 - 100)</label>
+                                <input type="number" id="inputCapacity" class="form-control" min="1" max="100" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary" id="btnUpdateSlots">
+                                <i data-lucide="save"></i> Update Capacity
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Manual Gate Control Card -->
+                    <div class="card" style="margin-bottom: 30px;">
+                        <div class="card-title">
+                            <i data-lucide="key-round"></i> Manual Gate Control
+                        </div>
+                        <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 16px;">
+                            Send override commands directly to trigger local entry barrier hardware.
+                        </p>
+                        <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+                            <button class="btn btn-primary" id="btnOpenGate" style="flex: 1; min-width: 140px;">
+                                <i data-lucide="door-open"></i> Open Gate
+                            </button>
+                            <button class="btn btn-danger" id="btnCloseGate" style="flex: 1; min-width: 140px;">
+                                <i data-lucide="lock"></i> Close Gate
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Alerts Dispatcher Card -->
+                    <div class="card">
+                        <div class="card-title">
+                            <i data-lucide="alert-triangle"></i> Facility Alerts & Broadcasts
+                        </div>
+                        <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 20px;">
+                            Dispatch immediate warning alerts or operations bulletins to driver dashboards.
+                        </p>
+                        
+                        <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 20px;">
+                            <button class="btn btn-danger" id="btnNotifyMaintenance" style="flex: 1;">
+                                <i data-lucide="flame"></i> Notify Fire Drill
+                            </button>
+                            <button class="btn btn-warning" id="btnNotifyGrid" style="flex: 1;">
+                                <i data-lucide="zap"></i> Power Maintenance
+                            </button>
+                            <button class="btn btn-outline" id="btnNotifyCustom" style="flex: 1;">
+                                <i data-lucide="megaphone"></i> Send Custom Alert
+                            </button>
+                        </div>
+                        <div style="border-top: 1px solid var(--border-color); padding-top: 20px;">
+                            <button class="btn btn-secondary" id="btnNotifyManagement" style="width: 100%;">
+                                <i data-lucide="bell"></i> Notify Management
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RIGHT COLUMN: Console Logs Feed -->
+                <div>
+                    <div class="card logs-card">
+                        <div class="card-title" style="margin-bottom: 4px; justify-content: space-between;">
+                            <span style="display: flex; align-items: center; gap: 8px;">
+                                <i data-lucide="terminal"></i> Operations Log
+                            </span>
+                            <span style="font-size: 11px; background: rgba(6,182,212,0.1); color: var(--color-primary); padding: 2px 8px; border-radius: 4px; font-weight: 700; text-transform: uppercase;">
+                                Live
+                            </span>
+                        </div>
+                        <p style="color: var(--text-secondary); font-size: 12px;">Real-time feed of check-ins and system changes.</p>
+                        
+                        <!-- Logs Scroll Panel -->
+                        <div class="logs-feed-container" id="adminLogsFeed">
+                            <!-- Injected dynamically by JS -->
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Custom notification overlay modal -->
+    <div class="modal-overlay" id="customAlertModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 style="font-size: 20px; font-weight: 700;">Broadcast Custom Message</h3>
+                <button class="modal-close" onclick="closeAlertModal()">&times;</button>
+            </div>
+            <form id="customAlertForm">
+                <div class="form-group">
+                    <label for="alertTitle" class="form-label">Alert Title</label>
+                    <input type="text" id="alertTitle" class="form-control" placeholder="e.g. Cleaning Notice" required>
+                </div>
+                <div class="form-group">
+                    <label for="alertMsg" class="form-label">Alert Message</label>
+                    <textarea id="alertMsg" class="form-control" placeholder="Provide details..." style="resize: vertical; min-height: 80px;" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    Broadcast Alert <i data-lucide="send"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container" style="text-align: center;">
+            <p>&copy; 2026 ParkSmart Operations. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Toast Notifications Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Scripts -->
+    <script src="js/state.js"></script>
+    <script src="js/auth.js" type="module"></script>
+    <script src="js/admin.js" type="module"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        // Init Lucide
+        lucide.createIcons();
+
+        // Responsive Hamburger Toggle
+        const navToggle = document.getElementById('navToggle');
+        const navMenu = document.getElementById('navMenu');
+        navToggle.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ParkSmart - Driver Dashboard</title>
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Navbar Header -->
+    <header class="navbar">
+        <div class="container">
+            <a href="index.html" class="logo">
+                <i data-lucide="parking-circle"></i> Park<span>Smart</span>
+            </a>
+            
+            <nav>
+                <ul class="nav-menu" id="navMenu">
+                    <li><a href="index.html" class="nav-link">Home</a></li>
+                    <li><a href="dashboard.html" class="nav-link active">Dashboard</a></li>
+                    <li><a href="scanner.html" class="nav-link">Gate Scanner</a></li>
+                    <li><a href="admin.html" class="nav-link">Admin Portal</a></li>
+                </ul>
+            </nav>
+            
+            <div class="nav-actions" id="navActions">
+                <!-- Logged in state injected by js/auth.js checker -->
+            </div>
+
+            <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+                <i data-lucide="menu"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content wrapper -->
+    <main class="main-content">
+        <div class="container">
+            <div class="dashboard-grid">
+                
+                <!-- LEFT COLUMN: Grid Selection and Stats -->
+                <div>
+                    <div style="margin-bottom: 24px;">
+                        <h1 style="font-size: 32px; font-weight: 800; font-family: var(--font-heading);" id="welcomeUser">Driver Portal</h1>
+                        <p style="color: var(--text-secondary); font-size: 15px;">Real-time occupancy status of the parking facility.</p>
+                    </div>
+
+                    <!-- Stats Strip -->
+                    <div class="dashboard-stats-strip">
+                        <div class="stat-box">
+                            <div class="stat-box-icon success">
+                                <i data-lucide="check-circle-2"></i>
+                            </div>
+                            <div class="stat-box-details">
+                                <h4>Available Slots</h4>
+                                <p id="countAvailable">--</p>
+                            </div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-box-icon warning">
+                                <i data-lucide="layout-grid"></i>
+                            </div>
+                            <div class="stat-box-details">
+                                <h4>Total Capacity</h4>
+                                <p id="countTotal">--</p>
+                            </div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-box-icon danger">
+                                <i data-lucide="x-circle"></i>
+                            </div>
+                            <div class="stat-box-details">
+                                <h4>Occupied Slots</h4>
+                                <p id="countOccupied">--</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- RIGHT COLUMN: Booking Sidebar Ticket -->
+                <div class="sidebar-panel">
+                    
+                    <!-- Title Box -->
+                    <div class="card" id="bookingActionCard">
+                        <div class="card-title">
+                            <i data-lucide="calendar-plus"></i> Reservation Terminal
+                        </div>
+                        
+                        <div style="text-align: center; padding: 12px 0;">
+                            <i data-lucide="car-front" style="width: 48px; height: 48px; color: var(--color-primary); margin-bottom: 12px; opacity: 0.85;"></i>
+                            <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 24px; line-height: 1.5;">
+                                Book your parking reservation for today. Reservations are allowed once daily between 6:00 AM and 8:00 AM.
+                            </p>
+                            <button class="btn btn-primary" id="btnReserveParking" style="width: 100%; padding: 12px 20px;">
+                                <i data-lucide="sparkles"></i> Reserve Parking
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Active Ticket Display Box -->
+                    <div class="ticket-wrapper" id="bookingTicketCard" style="display: none;">
+                        <div class="ticket-header">
+                            <h3>ParkSmart Ticket</h3>
+                            <p>Active reservation key details</p>
+                        </div>
+
+                        <!-- QR Code Canvas Container -->
+                        <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+                            <div id="qrcode" style="padding: 12px; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"></div>
+                        </div>
+
+                        <div style="text-align: center; margin-bottom: 20px;">
+                            <div class="ticket-status-tag" id="ticketStatusBadge">Reserved</div>
+                        </div>
+
+                        <div class="ticket-details">
+                            <div class="detail-row">
+                                <span>Ticket Ref</span>
+                                <span id="ticketIdVal">--</span>
+                            </div>
+                            <div class="detail-row">
+                                <span>Driver Name</span>
+                                <span id="ticketUserVal">--</span>
+                            </div>
+                            <div class="detail-row">
+                                <span>Reserved At</span>
+                                <span id="ticketTimeVal">--</span>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-danger btn-sm" id="btnCancelReservation" style="width: 100%;">
+                            <i data-lucide="trash-2"></i> Cancel Reservation
+                        </button>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Booking success modal -->
+    <div class="modal-overlay" id="successModal">
+        <div class="modal-box" style="text-align: center;">
+            <div style="width: 60px; height: 60px; border-radius: 50%; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: var(--color-success);">
+                <i data-lucide="shield-check" style="width: 32px; height: 32px;"></i>
+            </div>
+            <h3 style="font-size: 22px; margin-bottom: 8px;">Reservation Confirmed</h3>
+            <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 24px;">Your parking reservation has been confirmed and your secure QR ticket has been generated.</p>
+            <button class="btn btn-primary btn-sm" onclick="closeModal()">Close</button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container" style="text-align: center;">
+            <p>&copy; 2026 ParkSmart Operations. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Toast Notifications Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="js/state.js"></script>
+    <script src="js/auth.js" type="module"></script>
+    <script src="js/dashboard.js" type="module"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        // Init Lucide
+        lucide.createIcons();
+
+        // Responsive Hamburger Toggle
+        const navToggle = document.getElementById('navToggle');
+        const navMenu = document.getElementById('navMenu');
+        navToggle.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+        });
+    </script>
+</body>
+</html>
