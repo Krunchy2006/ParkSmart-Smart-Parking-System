@@ -1,0 +1,282 @@
+/*
+ * Smart Parking System - ESP32 + Firebase Web Dashboard
+ * 
+ * Hardware: ESP32, 2x IR Sensors, 1x Servo, 1x 16x2 I2C LCD
+ * Dependencies: 
+ *   - LiquidCrystal_I2C
+ *   - ESP32Servo
+ *   - Firebase Arduino Client Library for ESP8266 and ESP32 (by Mobizt)
+ */
+
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+#include <ESP32Servo.h>
+#include <WiFi.h>
+#include <Firebase_ESP_Client.h>
+
+// Provide the token generation process info.
+#include "addons/TokenHelper.h"
+// Provide the RTDB payload printing info and other helper functions.
+#include "addons/RTDBHelper.h"
+
+// --- WiFi Credentials ---
+#define WIFI_SSID "Joe"
+#define WIFI_PASSWORD "hello@45"
+
+// --- Firebase Configuration ---
+#define API_KEY "AIzaSyDxhJ26XNccjisD08npgd7_vsw369CeFuU"
+#define DATABASE_URL "https://smartparking-25da8-default-rtdb.firebaseio.com/"
+
+// Firebase Objects
+FirebaseData fbdo;
+FirebaseAuth auth;
+FirebaseConfig config;
+bool signupOK = false;
+
+// --- Pin Definitions ---
+const int entryIRPin = 14;   
+const int exitIRPin = 27;    
+const int servoPin = 13;     
+
+// --- System Configuration ---
+int maxSlots = 4;
+int availableSlots = 4;
+int occupiedSlots = 0;
+
+LiquidCrystal_I2C lcd(0x27, 16, 2); 
+Servo gateServo;
+
+const int angleClosed = 40;
+const int angleOpen = 100;
+
+unsigned long gateOpenTime = 0;
+const unsigned long gateDelay = 4000; 
+bool isGateOpen = false;
+
+bool lastEntryState = HIGH;
+bool lastExitState = HIGH;
+
+// Admin sync timer
+unsigned long lastSyncTime = 0;
+
+void setup() {
+  Serial.begin(115200);
+
+  pinMode(entryIRPin, INPUT_PULLUP); 
+  pinMode(exitIRPin, INPUT_PULLUP);
+  
+  gateServo.setPeriodHertz(50);
+  gateServo.attach(servoPin, 500, 2400);
+  gateServo.write(angleClosed);
+  
+  lcd.init();
+  lcd.backlight();
+  
+  updateDisplay("Connecting WiFi", "Please wait...");
+  
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("\nConnected to WiFi");
+  updateDisplay("WiFi Connected!", "Connecting DB...");
+
+  // Initialize Firebase
+  config.api_key = API_KEY;
+  config.database_url = DATABASE_URL;
+
+  // Sign up anonymously
+  if (Firebase.signUp(&config, &auth, "", "")) {
+    Serial.println("Firebase Auth Successful");
+    signupOK = true;
+  } else {
+    Serial.printf("%s\n", config.signer.signupError.message.c_str());
+  }
+
+  config.token_status_callback = tokenStatusCallback;
+  Firebase.begin(&config, &auth);
+  Firebase.reconnectWiFi(true);
+  
+  updateDisplayDefault();
+  
+  // Initial Sync to cloud
+  if(signupOK) {
+    syncToFirebase();
+  }
+}
+
+void loop() {
+  int currentEntryState = digitalRead(entryIRPin);
+  int currentExitState = digitalRead(exitIRPin);
+
+  // Sync with Firebase every 5 seconds to check for Admin overrides
+  // (In a real production app we'd use Firebase stream callbacks, but polling is safer for this prototype)
+  if (millis() - lastSyncTime > 5000 && signupOK) {
+    if (Firebase.RTDB.getInt(&fbdo, "/parking_status/totalSlots")) {
+      maxSlots = fbdo.intData();
+    }
+    if (Firebase.RTDB.getInt(&fbdo, "/parking_status/availableSlots")) {
+      availableSlots = fbdo.intData();
+    }
+    if (Firebase.RTDB.getInt(&fbdo, "/parking_status/occupiedSlots")) {
+      occupiedSlots = fbdo.intData();
+    }
+    
+// Check if scanner/dashboard triggered gate
+if (Firebase.RTDB.getString(&fbdo, "/parking_status/gateCommand")) {
+  String command = fbdo.stringData();
+
+  if (command == "open" && !isGateOpen) {
+    Serial.println("Gate command received");
+    openGate();
+
+    Firebase.RTDB.setString(
+      &fbdo,
+      "/parking_status/gateCommand",
+      "processing"
+    );
+  }
+}
+    updateDisplayDefault();
+    lastSyncTime = millis();
+  }
+
+if (!isGateOpen) {
+
+  // Entry is now handled by QR scanner.
+  // Entry IR counting disabled.
+
+  if (currentExitState == LOW && lastExitState == HIGH) {
+    delay(50);
+
+    if (digitalRead(exitIRPin) == LOW) {
+      handleExit();
+    }
+  }
+}
+  if (isGateOpen && (millis() - gateOpenTime >= gateDelay)) {
+    if (digitalRead(entryIRPin) == LOW || digitalRead(exitIRPin) == LOW) {
+       gateOpenTime = millis(); 
+    } else {
+       closeGate();
+       updateDisplayDefault();
+    }
+  }
+
+  lastEntryState = currentEntryState;
+  lastExitState = currentExitState;
+}
+
+void handleEntry() {
+  if (availableSlots > 0) {
+    availableSlots--;
+    occupiedSlots++;
+    updateDisplay("Vehicle Entering", "Gate Opening");
+    openGate();
+    
+    if (signupOK) {
+      Firebase.RTDB.setInt(&fbdo, "/parking_status/availableSlots", availableSlots);
+      Firebase.RTDB.setInt(&fbdo, "/parking_status/occupiedSlots", occupiedSlots);
+      pushEvent("Vehicle Entered");
+    }
+  } else {
+    updateDisplay("Parking Full!", "Cannot Enter");
+    if (signupOK) pushEvent("Entry denied - Parking Full");
+    delay(2000);
+    updateDisplayDefault();
+  }
+}
+
+void handleExit() {
+  if (occupiedSlots > 0) {
+    availableSlots++;
+    occupiedSlots--;
+    updateDisplay("Vehicle Exiting", "Gate Opening");
+    openGate();
+    
+    if (signupOK) {
+      Firebase.RTDB.setInt(&fbdo, "/parking_status/availableSlots", availableSlots);
+      Firebase.RTDB.setInt(&fbdo, "/parking_status/occupiedSlots", occupiedSlots);
+      pushEvent("Vehicle Exited");
+    }
+  }
+}
+
+void openGate() {
+
+  Serial.println("Opening Gate");
+
+  gateServo.write(angleOpen);
+
+  isGateOpen = true;
+
+  gateOpenTime = millis();
+
+  if (signupOK) {
+
+    Firebase.RTDB.setString(
+      &fbdo,
+      "/parking_status/gateStatus",
+      "open"
+    );
+
+    Firebase.RTDB.setString(
+      &fbdo,
+      "/parking_status/gateCommand",
+      "processing"
+    );
+  }
+}
+void closeGate() {
+
+  Serial.println("Closing Gate");
+
+  gateServo.write(angleClosed);
+
+  isGateOpen = false;
+
+  if (signupOK) {
+
+    Firebase.RTDB.setString(
+      &fbdo,
+      "/parking_status/gateStatus",
+      "closed"
+    );
+
+    Firebase.RTDB.setString(
+      &fbdo,
+      "/parking_status/gateCommand",
+      "closed"
+    );
+  }
+}
+void updateDisplay(String line1, String line2) {
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print(line1);
+  lcd.setCursor(0, 1);
+  lcd.print(line2);
+}
+
+void updateDisplayDefault() {
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Slots Left: " + String(availableSlots));
+  lcd.setCursor(0, 1);
+  if (availableSlots > 0) lcd.print("Welcome");
+  else lcd.print("Parking Full");
+}
+
+void pushEvent(String message) {
+  Firebase.RTDB.setString(&fbdo, "/parking_status/lastEvent", message);
+}
+
+void syncToFirebase() {
+  Firebase.RTDB.setInt(&fbdo, "/parking_status/totalSlots", maxSlots);
+  Firebase.RTDB.setInt(&fbdo, "/parking_status/availableSlots", availableSlots);
+  Firebase.RTDB.setInt(&fbdo, "/parking_status/occupiedSlots", occupiedSlots);
+  Firebase.RTDB.setString(&fbdo, "/parking_status/gateStatus", "closed");
+  Firebase.RTDB.setString(&fbdo, "/parking_status/gateCommand", "closed");
+  Firebase.RTDB.setString(&fbdo, "/parking_status/lastEvent", "System Initialized");
+}
